@@ -2,13 +2,18 @@
 
 require 'hpricot'
 require 'trollop'
-require './pokemon'
+require_relative '../lib/dexter/pokemon'
+require_relative '../lib/dexter/pokedb'
 
 opts = Trollop::options do
-  opt :type_of, "Get the type of a pokemon", :type => :string
+  opt :create, "Create the tables in the database"
+  opt :drop, "Drop an existing table"
+  opt :dry_run, "Just parse the file and dump data", :short => "p"
 end
 
-data = open("basic_listing.html") {|f| Hpricot(f) }
+Trollop::die("no HTML file specified") if ARGV.empty?
+
+data = open(ARGV[0]) {|f| Hpricot(f) }
 
 pokedex = data.at("#pokedex")
 
@@ -31,11 +36,18 @@ pokedex.at("tbody").search("tr").each do |row|
   all_pokemon << pokemon
 end
 
-#all_pokemon.each {|poke| puts poke }
+db = Dexter::PokeDB.new
 
-if opts[:type_of_given] then
-  wanted = all_pokemon.detect {|poke| poke.name.upcase == opts[:type_of].upcase }
-  out = "No.#{wanted.id}, #{wanted.name}, is "
-  out += wanted.types[0] + (wanted.types[1] ? "/#{wanted.types[1]}" : "") + "."
-  puts out
+if opts[:drop] then
+  db.drop
+end
+
+if opts[:create] then
+  db.create
+end
+
+if opts[:dry_run] then
+  all_pokemon.each {|poke| puts poke }
+else
+  all_pokemon.each {|poke| db.add_pokemon(poke) }
 end
