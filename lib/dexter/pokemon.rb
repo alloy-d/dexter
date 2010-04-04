@@ -42,9 +42,15 @@ module Dexter
     def special_defense() @stats[:sp_defense] end
     def speed() @stats[:speed] end
 
+    def type_string
+      string = "#{@types[0]}"
+      string += "/#{@types[1]}" if not @types[1].nil?
+      return string
+    end
+
     def to_s
       string = "#{@id}: #{@name}\t"
-      string += "(#{@types[0]}" + (@types[1] ? "/#{@types[1]}" : "") + ")"
+      string += "(#{type_string})"
 
       if not @stats.empty? then
         string += "\n     "
