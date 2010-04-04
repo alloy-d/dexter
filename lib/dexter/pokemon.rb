@@ -44,13 +44,17 @@ module Dexter
 
     def to_s
       string = "#{@id}: #{@name}\t"
-      string += "(#{@types[0]}" + (@types[1] ? "/#{@types[1]}" : "") + ")\n     "
-      string += "HP:#{@stats[:hp]} " if not @stats[:hp].nil?
-      string += "A:#{@stats[:attack]} " if not @stats[:attack].nil?
-      string += "D:#{@stats[:defense]} " if not @stats[:defense].nil?
-      string += "SpA:#{@stats[:sp_attack]} " if not @stats[:sp_attack].nil?
-      string += "SpD:#{@stats[:sp_defense]} " if not @stats[:sp_defense].nil?
-      string += "Spe:#{@stats[:speed]}" if not @stats[:speed].nil?
+      string += "(#{@types[0]}" + (@types[1] ? "/#{@types[1]}" : "") + ")"
+
+      if not @stats.empty? then
+        string += "\n     "
+        string += "HP:#{@stats[:hp]} " if not @stats[:hp].nil?
+        string += "A:#{@stats[:attack]} " if not @stats[:attack].nil?
+        string += "D:#{@stats[:defense]} " if not @stats[:defense].nil?
+        string += "SpA:#{@stats[:sp_attack]} " if not @stats[:sp_attack].nil?
+        string += "SpD:#{@stats[:sp_defense]} " if not @stats[:sp_defense].nil?
+        string += "Spe:#{@stats[:speed]}" if not @stats[:speed].nil?
+      end
       return string
     end
   end

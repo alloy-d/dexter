@@ -44,7 +44,7 @@ module Dexter
     def get_all(args)
       sql, params = nil
 
-      if args[:type1] and args[:type2] then
+      if args[:types].length == 2 then
         sql=<<-'EOS'
           (SELECT * FROM pokemon
            WHERE type1=$1::text AND type2=$2::text)
@@ -52,14 +52,14 @@ module Dexter
           (SELECT * FROM pokemon
            WHERE type1=$2::text AND type2=$1::text);
           EOS
-        params = [args[:type1].to_s, args[:type2].to_s]
+        params = args[:types].map(&:to_s)
 
-      elsif args[:type] then
+      elsif args[:types] then
         sql=<<-'EOS'
           SELECT * FROM pokemon
           WHERE type1=$1 OR type2=$1;
           EOS
-        params = [args[:type].to_s]
+        params = args[:types].map(&:to_s)
       end
 
       results = @connection.exec(sql, params)
