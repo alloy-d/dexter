@@ -257,6 +257,7 @@ module Dexter
         strats[1][:immunities].each do |immunity|
           merged[:weaknesses].delete immunity
           merged[:resistances].delete immunity
+          merged[:immunities].push immunity
         end
       end
 
