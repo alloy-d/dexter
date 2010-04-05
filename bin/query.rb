@@ -62,7 +62,9 @@ when /^strat/
     else
       poke = db.get(:name => ARGV.shift)
     end
-    out = "\n#{poke.name} is a #{poke.type_string} type.\n\n"
+    out = "\n#{poke.name} is "
+    out += (['a','e','i','o','u'].include? poke.type_string[0])? "an" : "a"
+    out += " #{poke.type_string} type.\n\n"
 
     types = poke.types
   else
