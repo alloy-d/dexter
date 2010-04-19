@@ -218,8 +218,8 @@ module Dexter
 
     def TypeChart.merge_strategies(strats)
       if strats.length > 2 then
-        puts STDERR, "Merging more than 2 defending types isn't supported."
-        puts STDERR, "    (And why would you want to do that?)"
+        STDERR.puts "Merging more than 2 defending types isn't supported."
+        STDERR.puts "    (And why would you want to do that?)"
         return nil
       end
       merged = strats[0]
