@@ -49,7 +49,7 @@ module Dexter
     end
 
     def to_s
-      string = "#{@id}: #{@name}\t"
+      string = "#{@id.to_s.rjust(3)}: #{@name}\t"
       string += "(#{type_string})"
 
       if not @stats.empty? then
