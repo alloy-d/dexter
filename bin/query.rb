@@ -1,8 +1,13 @@
 #!/usr/bin/env ruby
+require 'term/ansicolor'
 require 'trollop'
 require_relative '../lib/dexter/pokemon'
 require_relative '../lib/dexter/pokedb'
 require_relative '../lib/dexter/typechart'
+
+class String
+  include Term::ANSIColor
+end
 
 SUB_COMMANDS = %w(find strat strategy)
 
@@ -74,14 +79,17 @@ when /^strat/
 
   strat = Dexter::TypeChart::strategy(types)
   {
-    :bad_weaknesses => "Bad weaknesses",
-    :weaknesses => "Weaknesses",
-    :resistances => "Resistances",
-    :strong_resistances => "Strong resistances",
-    :immunities => "Immunities",
+    :immunities => ["Nil", [:blue, :bold]],
+    :double_weaknesses => ["x4.00", [:red, :bold]],
+    :weaknesses => ["x2.00", [:red]],
+    :resistances => ["x0.50", [:green]],
+    :double_resistances => ["x0.25", [:green, :bold]],
   }.each do |sym, str|
     if not strat[sym].nil? and not strat[sym].empty? then
-      out += "#{str}: " + strat[sym].join(", ") + "\n"
+      string = "#{str[0].rjust(6)}"
+      str[1].each {|meth| string = string.send(meth)}
+      string += ": " + strat[sym].join(", ") + "\n"
+      out += string
     end
   end
 

@@ -225,12 +225,12 @@ module Dexter
       merged = strats[0]
 
       if strats.length > 1 then
-        merged[:bad_weaknesses] = []
-        merged[:strong_resistances] = []
+        merged[:double_weaknesses] = []
+        merged[:double_resistances] = []
 
         strats[1][:weaknesses].each do |weakness|
           if merged[:weaknesses].include? weakness then
-            merged[:bad_weaknesses].push weakness
+            merged[:double_weaknesses].push weakness
             merged[:weaknesses].delete weakness
 
           elsif merged[:resistances].include? weakness then
@@ -246,7 +246,7 @@ module Dexter
             merged[:weaknesses].delete resistance
 
           elsif merged[:resistances].include? resistance then
-            merged[:strong_resistances].push resistance
+            merged[:double_resistances].push resistance
             merged[:resistances].delete resistance
 
           elsif not merged[:immunities].include? resistance then
