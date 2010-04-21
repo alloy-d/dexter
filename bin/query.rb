@@ -1,133 +1,142 @@
 #!/usr/bin/env ruby
-require 'term/ansicolor'
-require 'trollop'
-require_relative '../lib/dexter/pokemon'
-require_relative '../lib/dexter/pokedb'
-require_relative '../lib/dexter/typechart'
+require_relative '../lib/dexter/ui/cli'
 
-class String
-  include Term::ANSIColor
-end
-
-SUB_COMMANDS = %w(find strat strategy)
+# SUB_COMMANDS = %w(find strat strategy)
+# opts = Trollop::options do
+#   opt :id, "Query by id number", :type => :int
+#   opt :type_of, "Get the type of a pokemon"
+#   opt :number_of, "Get the id number of a pokemon"
+#   opt :name_of, "Get the name of a pokemon"
+#   stop_on SUB_COMMANDS
+# end
+OPERATIONS = {
+  "all" => :show_all,
+  "base-stats" => :show_base_stats,
+  "info" => :show_basic_info,
+  "find" => :show_find_results,
+  "type" => :show_strategy,
+}
 
 opts = Trollop::options do
-  opt :id, "Query by id number", :type => :int
-  opt :type_of, "Get the type of a pokemon"
-  opt :number_of, "Get the id number of a pokemon"
-  opt :name_of, "Get the name of a pokemon"
-  stop_on SUB_COMMANDS
+  opt :color, "Use pretty colors", :default => true
+  opt :id, "Query by pokemon id instead of name", :type => :int
 end
 
-first = ARGV.shift
-if first.nil? and not opts[:id_given] then
-  Trollop::die("I need a pokemon to look up or an operation")
+op, poke = ARGV.shift, ARGV.shift
+unless not op.nil? and (not poke.nil? or opts[:id_given]) then
+  Trollop::die("I need an operation and a pokemon to look up")
 end
 
-db = Dexter::PokeDB.new
-
-case first
-when "find"
-  cmd_opts = Trollop::options do
-    opt :complete, "Show all information"
-    opt :type, "Search by type; specify dual-type as type1/type2", :type => :string
-  end
-
-  pokes = []
-  if cmd_opts[:type_given] then
-    types = cmd_opts[:type].split('/')
-    pokes += db.get_all(:types => types)
-  end
-
-  pokes.map! {|poke| db.complete(poke) } if cmd_opts[:complete]
-  pokes.each {|poke| puts poke }
-
-when /^strat/
-  cmd_opts = Trollop::options do
-    opt :id, "Get pokemon by id number", :type => :int
-    opt :type, "Search by type; specify dual-type as type1/type2", :type => :string
-  end
-
-  if ARGV.first.nil? \
-    and not opts[:id_given] \
-    and not cmd_opts[:id_given] \
-    and not cmd_opts[:type_given]
-  then
-    Trollop::die("I need a pokemon or type to get info for")
-  end
-
-  out = nil
-  types = []
-  if not cmd_opts[:type_given] then
-    poke = nil
-    if opts[:id_given] then
-      poke = db.get(:id => opts[:id])
-    elsif cmd_opts[:id_given] then
-      poke = db.get(:id => cmd_opts[:id])
-    else
-      poke = db.get(:name => ARGV.shift)
-    end
-    out = "\n#{poke.name} is "
-    out += (['a','e','i','o','u'].include? poke.type_string[0])? "an" : "a"
-    out += " #{poke.type_string} type.\n\n"
-
-    types = poke.types
-  else
-    types = cmd_opts[:type].split('/')
-    types.map! {|str| str.intern }
-  end
-
-  strat = Dexter::TypeChart::strategy(types)
-  {
-    :immunities => ["Nil", [:blue, :bold]],
-    :double_weaknesses => ["x4.00", [:red, :bold]],
-    :weaknesses => ["x2.00", [:red]],
-    :resistances => ["x0.50", [:green]],
-    :double_resistances => ["x0.25", [:green, :bold]],
-  }.each do |sym, str|
-    if not strat[sym].nil? and not strat[sym].empty? then
-      string = "#{str[0].rjust(6)}"
-      str[1].each {|meth| string = string.send(meth)}
-      string += ": " + strat[sym].join(", ") + "\n"
-      out += string
-    end
-  end
-
-  puts out + "\n"
-
-else
-  pokemon_name = first
-  wanted = nil
-
-  if opts[:id_given] then
-    wanted = db.get(:id => opts[:id])
-  else
-    wanted = db.get(:name => pokemon_name)
-  end
-
-  if opts[:type_of_given] then
-    out = "No.#{wanted.id}, #{wanted.name}, is "
-    out += wanted.types[0].to_s
-    out += "/#{wanted.types[1]}" if wanted.types[1]
-    out += "."
-    puts out
-    exit 0
-  end
-
-  if opts[:number_of_given] then
-    out = "#{wanted.name} has number #{wanted.id}."
-    puts out
-    exit 0
-  end
-
-  if opts[:name_of_given] then
-    out = "No.#{wanted.id} is #{wanted.name}."
-    puts out
-    exit 0
-  end
-
-  puts db.complete wanted
+ui = Dexter::UI::CLI.new
+if poke then ui.send(OPERATIONS[op], :name => poke)
+else ui.send(OPERATIONS[op], :id => opts[:id])
 end
+
+
+# db = Dexter::PokeDB.new
+
+# case first
+# when "find"
+#   cmd_opts = Trollop::options do
+#     opt :complete, "Show all information"
+#     opt :type, "Search by type; specify dual-type as type1/type2", :type => :string
+#   end
+
+#   pokes = []
+#   if cmd_opts[:type_given] then
+#     types = cmd_opts[:type].split('/')
+#     pokes += db.get_all(:types => types)
+#   end
+
+#   pokes.map! {|poke| db.complete(poke) } if cmd_opts[:complete]
+#   pokes.each {|poke| puts poke }
+
+# when /^strat/
+#   cmd_opts = Trollop::options do
+#     opt :id, "Get pokemon by id number", :type => :int
+#     opt :type, "Search by type; specify dual-type as type1/type2", :type => :string
+#   end
+
+#   if ARGV.first.nil? \
+#     and not opts[:id_given] \
+#     and not cmd_opts[:id_given] \
+#     and not cmd_opts[:type_given]
+#   then
+#     Trollop::die("I need a pokemon or type to get info for")
+#   end
+
+#   out = nil
+#   types = []
+#   if not cmd_opts[:type_given] then
+#     poke = nil
+#     if opts[:id_given] then
+#       poke = db.get(:id => opts[:id])
+#     elsif cmd_opts[:id_given] then
+#       poke = db.get(:id => cmd_opts[:id])
+#     else
+#       poke = db.get(:name => ARGV.shift)
+#     end
+#     out = "\n#{poke.name} is "
+#     out += (['a','e','i','o','u'].include? poke.type_string[0])? "an" : "a"
+#     out += " #{poke.type_string} type.\n\n"
+
+#     types = poke.types
+#   else
+#     types = cmd_opts[:type].split('/')
+#     types.map! {|str| str.intern }
+#   end
+
+#   strat = Dexter::TypeChart::strategy(types)
+#   {
+#     :immunities => ["Nil", [:blue, :bold]],
+#     :double_weaknesses => ["x4.00", [:red, :bold]],
+#     :weaknesses => ["x2.00", [:red]],
+#     :resistances => ["x0.50", [:green]],
+#     :double_resistances => ["x0.25", [:green, :bold]],
+#   }.each do |sym, str|
+#     if not strat[sym].nil? and not strat[sym].empty? then
+#       string = "#{str[0].rjust(6)}"
+#       str[1].each {|meth| string = string.send(meth)}
+#       string += ": " + strat[sym].join(", ") + "\n"
+#       out += string
+#     end
+#   end
+
+#   puts out + "\n"
+
+# else
+#   pokemon_name = first
+#   wanted = nil
+
+#   if opts[:id_given] then
+#     wanted = db.get(:id => opts[:id])
+#   else
+#     wanted = db.get(:name => pokemon_name)
+#   end
+
+#   if opts[:type_of_given] then
+#     out = "No.#{wanted.id}, #{wanted.name}, is "
+#     out += wanted.types[0].to_s
+#     out += "/#{wanted.types[1]}" if wanted.types[1]
+#     out += "."
+#     puts out
+#     exit 0
+#   end
+
+#   if opts[:number_of_given] then
+#     out = "#{wanted.name} has number #{wanted.id}."
+#     puts out
+#     exit 0
+#   end
+
+#   if opts[:name_of_given] then
+#     out = "No.#{wanted.id} is #{wanted.name}."
+#     puts out
+#     exit 0
+#   end
+
+#   puts db.complete wanted
+# end
 
 
 
