@@ -17,20 +17,22 @@ data = open(ARGV[0]) {|f| Hpricot(f) }
 
 pokedex = data.at("#pokedex")
 
-stats = [:hp, :attack, :defense, :special_attack, :special_defense, :speed]
+stats = [:hp, :attack, :defense, :sp_attack, :sp_defense, :speed]
 all_pokemon = []
 pokedex.at("tbody").search("tr").each do |row|
   data = row.search("td")
   id = data[0].inner_text.to_i
   name = data[1].inner_text
 
-  pokemon = Pokemon::new(id, name)
+  next if [386, 413, 479, 487, 492, 555, 648].include? id
+
+  pokemon = Dexter::Pokemon::new({"id" => id, "name" => name})
   data[2].search("a").each do |stat|
-    pokemon.has_type(stat.inner_text)
+    pokemon.has_type(stat.inner_text.downcase)
   end
 
   stats.each_index do |i|
-    pokemon.has_base_stat(stats[i], data[i+3].inner_text.to_i)
+    pokemon.has_stat(stats[i], data[i+3].inner_text.to_i)
   end
 
   all_pokemon << pokemon
