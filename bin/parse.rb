@@ -24,7 +24,7 @@ pokedex.at("tbody").search("tr").each do |row|
   id = data[0].inner_text.to_i
   name = data[1].inner_text
 
-  next if [386, 413, 479, 487, 492, 555, 648].include? id
+  next if all_pokemon.any?{|p| p.id == id }
 
   pokemon = Dexter::Pokemon::new({"id" => id, "name" => name})
   data[2].search("a").each do |stat|
