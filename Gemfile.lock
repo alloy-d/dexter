@@ -1,0 +1,26 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    coderay (1.0.9)
+    hpricot (0.8.6)
+    method_source (0.8.2)
+    pg (0.17.0)
+    pry (0.9.12.2)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+    slop (3.4.6)
+    term-ansicolor (1.2.2)
+      tins (~> 0.8)
+    tins (0.12.0)
+    trollop (2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  hpricot
+  pg
+  pry
+  term-ansicolor
+  trollop
