@@ -32,7 +32,7 @@ pokedex.at("tbody").search("tr").each do |row|
   end
 
   stats.each_index do |i|
-    pokemon.has_stat(stats[i], data[i+3].inner_text.to_i)
+    pokemon.has_stat(stats[i], data[i+4].inner_text.to_i)
   end
 
   all_pokemon << pokemon
