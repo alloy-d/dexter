@@ -22,11 +22,15 @@ all_pokemon = []
 pokedex.at("tbody").search("tr").each do |row|
   data = row.search("td")
   id = data[0].inner_text.to_i
-  name = data[1].inner_text
+  name = data[1].at(".ent-name").inner_text
+  forme = data[1].at(".aside").inner_text rescue nil
 
-  next if all_pokemon.any?{|p| p.id == id }
-
-  pokemon = Dexter::Pokemon::new({"id" => id, "name" => name})
+  basics = {
+    "id" => id,
+    "name" => name,
+  }
+  basics.merge!("forme" => forme) if forme
+  pokemon = Dexter::Pokemon::new(basics)
   data[2].search("a").each do |stat|
     pokemon.has_type(stat.inner_text.downcase)
   end
