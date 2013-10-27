@@ -19,22 +19,39 @@ module Dexter
         @use_color = use_color
       end
 
-      def show_all(args)
-        puts
-        show_basic_info(args)
-        puts
-        show_base_stats(args)
-        puts
-        show_strategy(args)
+      def respond_to_missing?(meth)
+        self.methods.include?("#{meth}_single".to_sym)
+      end
+      def method_missing(meth, *args, &blk)
+        single_meth = "#{meth}_single".to_sym
+        if self.methods.include?(single_meth)
+          pokes = retrieve(args[0])
+          pokes.each do |poke|
+            self.send(single_meth, poke)
+          end
+        else super
+        end
       end
 
-      def show_basic_info(args)
-        poke = retrieve(args)
-        puts PADDING + "##{poke.id}: #{poke.name} (#{poke.type_string})"
+      def show_all_single(poke)
+        puts
+        show_basic_info_single(poke)
+        puts
+        show_base_stats_single(poke)
+        puts
+        show_strategy_single(poke)
       end
 
-      def show_base_stats(args)
-        poke = retrieve(args)
+      def show_basic_info_single(poke)
+        str = PADDING + "##{poke.pokedex_id}: #{poke.name}"
+        if poke.forme
+          str += " (#{poke.forme})"
+        end
+        str += "\t(#{poke.type_string})"
+        puts str
+      end
+
+      def show_base_stats_single(poke)
         outrow = [PADDING, PADDING]
         { :hp => "HP",
           :attack => "Att",
@@ -50,14 +67,8 @@ module Dexter
         outrow.each {|row| puts row }
       end
 
-      def show_strategy(args)
-        types = []
-        if args[:types] then
-          types = parse_type_arg(args[:types])
-        else
-          poke = retrieve(args)
-          types = poke.types
-        end
+      def show_strategy_single(poke)
+        types = poke.types
         strategy = Dexter::TypeChart::strategy(types)
 
         { :double_weaknesses => ["x4.00", [:red, :bold]],

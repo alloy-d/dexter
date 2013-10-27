@@ -4,7 +4,7 @@
 
 module Dexter
   class Pokemon
-    attr_accessor :id, :name, :types, :stats
+    attr_accessor :pokedex_id, :name, :forme, :types, :stats
 
     def initialize(info)
       @stats = {}
@@ -13,9 +13,18 @@ module Dexter
       merge!(info)
     end
 
+    def id
+      str = pokedex_id.to_s
+      if forme
+        str += "-" + forme.downcase.gsub(/[^a-z]+/, "-")
+      end
+      str
+    end
+
     def merge!(info)
-      @id = Integer(info["id"]) if not info["id"].nil?
+      @pokedex_id = Integer(info["pokedex_id"]) if not info["pokedex_id"].nil?
       @name = info["name"] if not info["name"].nil?
+      @forme = info["forme"] if not info["forme"].nil?
 
       if not info["base_stats"].nil? then
         info["base_stats"].each_pair {|k,v| @stats[k.intern] = v }
@@ -49,8 +58,9 @@ module Dexter
     end
 
     def to_s
-      string = "#{@id.to_s.rjust(3)}: #{@name}\t"
-      string += "(#{type_string})"
+      string = "#{@pokedex_id.to_s.rjust(3)}: #{@name}"
+      string += " (#{@forme})" if @forme
+      string += "\t(#{type_string})"
 
       if not @stats.empty? then
         string += "\n     "
