@@ -69,7 +69,7 @@ module Dexter
     end
 
     def complete(poke)
-      sql = "SELECT * FROM base_stats WHERE id=$1::int"
+      sql = "SELECT * FROM base_stats WHERE id=$1::text"
       params = [poke.id]
 
       row = @connection.exec(sql, params)[0]
@@ -82,8 +82,10 @@ module Dexter
     def create_pokemon_table
       sql=<<'EOS'
 CREATE TABLE pokemon (
-  id integer primary key,
+  id text primary key,
+  pokedex_id integer not null,
   name text not null,
+  forme text,
   type1 text not null,
   type2 text
 );
@@ -95,7 +97,7 @@ EOS
     def create_base_stats_table
       sql=<<'EOS'
 CREATE TABLE base_stats (
-  id integer primary key,
+  id text primary key,
   hp integer not null,
   attack integer not null,
   defense integer not null,
@@ -120,17 +122,17 @@ EOS
 
     def insert_pokemon(poke)
       sql=<<'EOS'
-INSERT INTO pokemon (id, name, type1, type2)
-VALUES ($1::int, $2::text, $3::text, $4::text);
+INSERT INTO pokemon (id, pokedex_id, name, forme, type1, type2)
+VALUES ($1::text, $2::int, $3::text, $4::text, $5::text, $6::text);
 EOS
-      @connection.exec(sql, [poke.id, poke.name, poke.type1, poke.type2])
+      @connection.exec(sql, [poke.id, poke.pokedex_id, poke.name, poke.forme, poke.type1, poke.type2])
     end
     private :insert_pokemon
 
     def insert_base_stats(poke)
       sql=<<'EOS'
 INSERT INTO base_stats (id, hp, attack, defense, sp_attack, sp_defense, speed)
-VALUES ($1::int, $2::int, $3::int, $4::int, $5::int, $6::int, $7::int);
+VALUES ($1::text, $2::int, $3::int, $4::int, $5::int, $6::int, $7::int);
 EOS
       @connection.exec(sql, [
                              poke.id,

@@ -26,7 +26,7 @@ pokedex.at("tbody").search("tr").each do |row|
   forme = data[1].at(".aside").inner_text rescue nil
 
   basics = {
-    "id" => id,
+    "pokedex_id" => id,
     "name" => name,
   }
   basics.merge!("forme" => forme) if forme
