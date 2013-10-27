@@ -24,27 +24,18 @@ module Dexter
       drop_base_stats_table
     end
 
-    def get(args)
-      row = nil
-      if args[:id] then
-        row = @connection.exec("SELECT * from pokemon WHERE id=$1::int;",
-                               [args[:id]],
-                               )[0]
-      elsif args[:name] then
-        row = @connection.exec("SELECT * from pokemon WHERE name ilike $1::text",
-                               [args[:name]],
-                               )[0]
-      end
-
-      poke = Dexter::Pokemon.new(row)
-
-      return poke
-    end
-
     def get_all(args)
       sql, params = nil
 
-      if args[:types].length == 2 then
+      if args[:id] then
+        sql = "SELECT * FROM pokemon WHERE pokedex_id=$1::int;"
+        params = [args[:id].to_i]
+
+      elsif args[:name] then
+        sql = "SELECT * FROM pokemon WHERE name ILIKE $1::text;"
+        params = [args[:name]]
+
+      elsif args[:types].length == 2 then
         sql=<<-'EOS'
           (SELECT * FROM pokemon
            WHERE type1=$1::text AND type2=$2::text)
